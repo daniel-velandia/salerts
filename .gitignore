@@ -1,0 +1,32 @@
+# =================================================================
+# SALERTS - MASTER GITIGNORE
+# =================================================================
+
+# --- Entorno y Secretos ---
+.env
+.env.local
+*.pem
+
+# --- Backend (./salerts-backend) ---
+salerts-backend/target/
+salerts-backend/.mvn/wrapper/maven-wrapper.jar
+salerts-backend/build/
+
+# --- Frontend (./salerts_front) ---
+salerts_front/node_modules/
+salerts_front/dist/
+salerts_front/dist-ssr/
+salerts_front/coverage/
+
+# --- Logs y Basura de sistema ---
+*.log
+.DS_Store
+Thumbs.db
+
+# --- IDEs (VS Code, IntelliJ, etc.) ---
+.vscode/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
