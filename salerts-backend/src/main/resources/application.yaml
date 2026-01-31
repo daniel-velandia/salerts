@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: salerts
+  
+  docker:
+    compose:
+      enabled: true
+      file: compose.yaml
+      lifecycle-management: start-only
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://db:5432/salerts}
+    username: ${SPRING_DATASOURCE_USERNAME:user_admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:secret_pass}
+    driver-class-name: org.postgresql.Driver
+  
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: ${JPA_SHOW_SQL:false}
+    defer-datasource-initialization: true 
+    
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 25
+          lob:
+            non_contextual_creation: true
+
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET:fesc_salerts_ultra_secret_key_2026_architect_level}
+    expiration: 86400000
+  cors:
+    allowed-origin: ${APP_CORS_ALLOWED_ORIGIN:http://localhost:5173}

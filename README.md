@@ -1,6 +1,6 @@
 # SAlertS - Sistema de Alertas Académicas 🎓
 
-Sistema integral para la gestión y monitoreo de rendimiento académico, diseñado bajo una arquitectura de microservicios contenidizados.
+Sistema integral para la gestión y monitoreo de rendimiento académico, diseñado bajo una arquitectura de microservicios contenerizados.
 
 ## 🛠️ Tecnologías
 - **Backend:** Java 17, Spring Boot 3, Spring Security, JWT.
