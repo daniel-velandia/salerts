@@ -17,4 +17,9 @@ public class OptionsController {
     public ResponseEntity<GlobalOptionsResponse> getAllOptions() {
         return ResponseEntity.ok(optionsService.getGlobalOptions());
     }
+
+    @GetMapping("/active-status/{groupId}")
+    public ResponseEntity<ActiveTermStatusResponse> getActiveStatus(@PathVariable Long groupId) {
+        return ResponseEntity.ok(calendarConfigService.getActiveTermStatus(groupId));
+    }
 }

@@ -28,4 +28,8 @@ public interface CalendarConfigRepository extends JpaRepository<CalendarConfig, 
 
     boolean existsByPeriodIdentificatorAndNoteNumber(UUID periodId, Integer noteNumber);
     List<CalendarConfig> findAllByEndDateBetween(LocalDateTime start, LocalDateTime end);
+
+    List<CalendarConfig> findByPeriodIdOrderByNoteNumberAsc(Long periodId);
+
+    Optional<CalendarConfig> findByPeriodIdAndNoteNumber(Long periodId, Integer noteNumber);
 }

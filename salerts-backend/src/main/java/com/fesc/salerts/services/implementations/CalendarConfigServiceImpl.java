@@ -117,6 +117,39 @@ public class CalendarConfigServiceImpl implements CalendarConfigService {
         return mapToResponse(calendarConfigRepository.save(config));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ActiveTermStatusResponse getActiveTermStatus(Long groupId) {
+        var group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("l grupo con el Id: " + groupId + " No fué encontrado"));
+
+        Long periodId = group.getAcademicPeriod().getId();
+
+        List<CalendarConfig> configs = calendarConfigRepository.findByPeriodIdOrderByNoteNumberAsc(periodId);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (CalendarConfig config : configs) {
+            boolean isOpen = !now.isBefore(config.getStartDate()) && !now.isAfter(config.getEndDate());
+
+            if (isOpen) {
+                return ActiveTermStatusResponse.builder()
+                        .isGradingEnabled(true)
+                        .activeTermNumber(config.getNoteNumber())
+                        .deadline(config.getEndDate())
+                        .message("Corte " + config.getNoteNumber() + " Habilitado")
+                        .build();
+            }
+        }
+
+        return ActiveTermStatusResponse.builder()
+                .isGradingEnabled(false)
+                .activeTermNumber(null)
+                .deadline(null)
+                .message("No hay periodos de carga de notas habilitados.")
+                .build();
+    }
+
     private CalendarConfigResponse mapToResponse(CalendarConfig config) {
         return new CalendarConfigResponse(
                 config.getIdentificator(),
