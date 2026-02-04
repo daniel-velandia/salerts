@@ -15,6 +15,12 @@ import com.fesc.salerts.domain.entities.security.User;
 
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
+
+    @Query("SELECT e FROM Enrollment e JOIN FETCH e.student st WHERE e.group.identificator = :groupId")
+    List<Enrollment> findAllByGroupIdentificatorWithStudent(@Param("groupId") UUID groupId);
+
+    List<Enrollment> findByGroupIdentificator(UUID groupIdentificator);
+
     List<Enrollment> findByStudentAndGroup_AcademicPeriod(User student, AcademicPeriod period);
 
     Optional<Enrollment> findByIdentificator(UUID identificator);
@@ -23,18 +29,12 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     boolean existsByGroupIdentificatorAndStudentIdentificator(UUID groupId, UUID studentId);
 
-    @Query("""
-                SELECT e FROM Enrollment e
-                JOIN FETCH e.student st
-                WHERE e.group.identificator = :groupId
-            """)
-    List<Enrollment> findAllByGroupIdentificatorWithStudent(@Param("groupId") UUID groupId);
     @Query("SELECT COUNT(e) > 0 FROM Enrollment e " +
-           "WHERE e.student.identificator = :studentId " +
-           "AND e.group.subject.identificator = :subjectId " +
-           "AND e.group.academicPeriod.identificator = :periodId")
+            "WHERE e.student.identificator = :studentId " +
+            "AND e.group.subject.identificator = :subjectId " +
+            "AND e.group.academicPeriod.identificator = :periodId")
     boolean existsByStudentAndSubjectInPeriod(
-            @Param("studentId") UUID studentId, 
-            @Param("subjectId") UUID subjectId, 
+            @Param("studentId") UUID studentId,
+            @Param("subjectId") UUID subjectId,
             @Param("periodId") UUID periodId);
 }

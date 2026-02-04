@@ -5,6 +5,9 @@ import com.fesc.salerts.dtos.responses.GlobalOptionsResponse;
 import com.fesc.salerts.services.interfaces.CalendarConfigService;
 import com.fesc.salerts.services.interfaces.OptionsService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +25,7 @@ public class OptionsController {
     }
 
     @GetMapping("/active-status/{groupId}")
-    public ResponseEntity<ActiveTermStatusResponse> getActiveStatus(@PathVariable Long groupId) {
+    public ResponseEntity<ActiveTermStatusResponse> getActiveStatus(@PathVariable UUID groupId) {
         return ResponseEntity.ok(calendarConfigService.getActiveTermStatus(groupId));
     }
 }

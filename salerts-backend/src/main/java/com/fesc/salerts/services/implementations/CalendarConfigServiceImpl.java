@@ -122,13 +122,13 @@ public class CalendarConfigServiceImpl implements CalendarConfigService {
 
     @Override
     @Transactional(readOnly = true)
-    public ActiveTermStatusResponse getActiveTermStatus(Long groupId) {
-        var group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("l grupo con el Id: " + groupId + " No fué encontrado"));
+    public ActiveTermStatusResponse getActiveTermStatus(UUID groupId) {
+        var group = groupRepository.findByIdentificator(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + groupId));
 
-        Long periodId = group.getAcademicPeriod().getId();
+        UUID periodId = group.getAcademicPeriod().getIdentificator(); 
 
-        List<CalendarConfig> configs = calendarConfigRepository.findByPeriodIdOrderByNoteNumberAsc(periodId);
+        List<CalendarConfig> configs = calendarConfigRepository.findByPeriodIdentificatorOrderByNoteNumberAsc(periodId);
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -149,7 +149,7 @@ public class CalendarConfigServiceImpl implements CalendarConfigService {
                 .isGradingEnabled(false)
                 .activeTermNumber(null)
                 .deadline(null)
-                .message("No hay periodos de carga de notas habilitados.")
+                .message("No hay periodos de carga de notas activos.")
                 .build();
     }
 

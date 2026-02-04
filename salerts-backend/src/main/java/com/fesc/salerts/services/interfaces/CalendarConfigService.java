@@ -13,5 +13,5 @@ public interface CalendarConfigService {
     CalendarConfigResponse createCalendarConfig(CreateCalendarConfigRequest request);
     List<CalendarConfigResponse> getConfigsByPeriod(UUID periodId);
     CalendarConfigResponse updateDates(UUID id, LocalDateTime start, LocalDateTime end);
-    ActiveTermStatusResponse getActiveTermStatus(Long groupId);
+    ActiveTermStatusResponse getActiveTermStatus(UUID groupId);
 }

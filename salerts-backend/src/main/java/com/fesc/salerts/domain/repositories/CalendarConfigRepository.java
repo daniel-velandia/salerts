@@ -14,22 +14,19 @@ import java.util.UUID;
 @Repository
 public interface CalendarConfigRepository extends JpaRepository<CalendarConfig, Long> {
 
+    List<CalendarConfig> findByPeriodIdentificatorOrderByNoteNumberAsc(UUID periodIdentificator);
+
+    Optional<CalendarConfig> findByPeriodIdentificatorAndNoteNumber(UUID periodIdentificator, Integer noteNumber);
+
+    boolean existsByPeriodIdentificatorAndNoteNumber(UUID periodIdentificator, Integer noteNumber);
+
     @Query("SELECT c FROM CalendarConfig c WHERE c.period.identificator = :periodId ORDER BY c.noteNumber ASC")
     List<CalendarConfig> findByPeriodId(@Param("periodId") UUID periodId);
 
-    @Query("SELECT COUNT(c) > 0 FROM CalendarConfig c " +
-           "WHERE c.period.identificator = :periodId AND c.noteNumber = :noteNumber")
+    @Query("SELECT COUNT(c) > 0 FROM CalendarConfig c WHERE c.period.identificator = :periodId AND c.noteNumber = :noteNumber")
     boolean existsByPeriodAndNoteNumber(@Param("periodId") UUID periodId, @Param("noteNumber") Integer noteNumber);
 
     Optional<CalendarConfig> findByIdentificator(UUID identificator);
-    
-    @Query("SELECT c FROM CalendarConfig c WHERE c.period.identificator = :periodId AND c.noteNumber = :noteNumber")
-    Optional<CalendarConfig> findByPeriodIdentificatorAndNoteNumber(UUID periodId, Integer noteNumber);
 
-    boolean existsByPeriodIdentificatorAndNoteNumber(UUID periodId, Integer noteNumber);
     List<CalendarConfig> findAllByEndDateBetween(LocalDateTime start, LocalDateTime end);
-
-    List<CalendarConfig> findByPeriodIdOrderByNoteNumberAsc(Long periodId);
-
-    Optional<CalendarConfig> findByPeriodIdAndNoteNumber(Long periodId, Integer noteNumber);
 }

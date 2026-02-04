@@ -16,6 +16,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     @Query("SELECT DISTINCT g FROM Group g " +
            "JOIN FETCH g.subject s " +
            "JOIN FETCH g.teacher t " +
+           "JOIN FETCH g.academicPeriod ap " +
            "LEFT JOIN FETCH g.schedules sch " +
            "WHERE g.identificator = :identificator")
     Optional<Group> findByIdentificator(@Param("identificator") UUID identificator);
