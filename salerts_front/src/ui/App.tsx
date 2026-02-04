@@ -18,10 +18,12 @@ import { ConfigurationPage } from "./pages/configuration/ConfigurationPage";
 import { GroupsPage } from "./pages/groups/GroupsPage";
 import { GroupCreateEditPage } from "./pages/groups/GroupCreateEditPage";
 import { ProfilePage } from "./pages/user/ProfilePage";
+import { ThemeProvider } from "./components/theme-provider";
 
 function App() {
   return (
-    <Provider store={store}>
+    <ThemeProvider>
+      <Provider store={store}>
       <BrowserRouter>
         <AppFeedback />
         <Routes>
@@ -64,6 +66,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </Provider>
+    </ThemeProvider>
   );
 }
 

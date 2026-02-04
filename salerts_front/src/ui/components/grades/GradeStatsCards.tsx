@@ -43,8 +43,8 @@ const StatCard = ({ label, value, icon, bgClass }: any) => (
   <Card>
     <CardContent className="p-4 flex items-center justify-between">
       <div>
-        <p className="text-sm text-gray-600">{label}</p>
-        <p className="mt-2 text-lg font-semibold text-gray-900">{value}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="mt-2 text-lg font-semibold text-foreground">{value}</p>
       </div>
       <div
         className={`w-10 h-10 rounded-lg flex items-center justify-center ${bgClass}`}

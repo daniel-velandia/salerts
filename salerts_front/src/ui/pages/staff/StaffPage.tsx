@@ -49,7 +49,7 @@ export function StaffPage() {
         }
       />
 
-      <div className="bg-white p-4 rounded-lg border shadow-sm">
+      <div className="bg-card p-4 rounded-lg border shadow-sm">
         <AppForm<StaffFilterParams>
           schema={staffFilterSchema}
           defaultValues={emptyStaffFilterParams}

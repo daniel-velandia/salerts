@@ -66,8 +66,8 @@ export function GroupsPage() {
     <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gestión de Grupos</h2>
-          <p className="text-sm text-gray-600">
+          <h2 className="text-2xl font-bold text-foreground">Gestión de Grupos</h2>
+          <p className="text-sm text-muted-foreground">
             Administra grupos de materias con profesores y horarios
           </p>
         </div>
@@ -88,19 +88,19 @@ export function GroupsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <p className="text-2xl font-bold text-blue-600">{statistics.totalGroups}</p>
-              <p className="text-sm text-gray-600">Grupos Totales</p>
+              <p className="text-sm text-muted-foreground">Grupos Totales</p>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <p className="text-2xl font-bold text-green-600">{statistics.uniqueSubjects}</p>
-              <p className="text-sm text-gray-600">Materias Activas</p>
+              <p className="text-sm text-muted-foreground">Materias Activas</p>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <p className="text-2xl font-bold text-purple-600">{statistics.uniqueTeachers}</p>
-              <p className="text-sm text-gray-600">Profesores</p>
+              <p className="text-sm text-muted-foreground">Profesores</p>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg">
               <p className="text-2xl font-bold text-orange-600">{statistics.totalSchedules}</p>
-              <p className="text-sm text-gray-600">Horarios</p>
+              <p className="text-sm text-muted-foreground">Horarios</p>
             </div>
           </div>
         </CardContent>
@@ -215,7 +215,7 @@ export function GroupsPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-600">Horarios:</span>
+                    <span className="text-muted-foreground">Horarios:</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {group.schedules.map((schedule) => (

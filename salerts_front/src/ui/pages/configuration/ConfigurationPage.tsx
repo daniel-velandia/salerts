@@ -6,7 +6,7 @@ import { Input } from '@/ui/components/shadcn/input';
 import { Label } from '@/ui/components/shadcn/label';
 import { Badge } from '@/ui/components/shadcn/badge';
 import { Calendar, Plus, Edit2, CheckCircle, Clock } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/ui/components/shadcn/dialog';
+import { AppAlertDialog } from "@/ui/components/common/feedback/AppAlertDialog";
 import { usePeriodManagement } from '@/hooks/periods/usePeriodManagement';
 import { useCalendarConfigManagement } from '@/hooks/calendarConfigs/useCalendarConfigManagement';
 import { Navigate } from "react-router-dom";
@@ -125,8 +125,8 @@ export function ConfigurationPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h2 className="text-2xl md:text-3xl text-gray-900 font-bold">Configuración del Sistema</h2>
-        <p className="text-sm md:text-base text-gray-600">
+        <h2 className="text-2xl md:text-3xl text-foreground font-bold">Configuración del Sistema</h2>
+        <p className="text-sm md:text-base text-muted-foreground">
           Gestión de períodos académicos y configuración de cortes evaluativos
         </p>
       </div>
@@ -181,7 +181,7 @@ export function ConfigurationPage() {
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium text-gray-900">{period.name}</h3>
+                        <h3 className="font-medium text-foreground">{period.name}</h3>
                         {period.activeState && (
                           <Badge variant="default" className="bg-green-600">
                             <CheckCircle className="w-3 h-3 mr-1" />
@@ -189,7 +189,7 @@ export function ConfigurationPage() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {new Date(period.initialDate).toLocaleDateString('es-ES')} - {new Date(period.endDate).toLocaleDateString('es-ES')}
                       </p>
                     </div>
@@ -272,7 +272,7 @@ export function ConfigurationPage() {
                   return (
                     <div key={period.id} className="space-y-3">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-gray-900">{period.name}</h3>
+                        <h3 className="font-medium text-foreground">{period.name}</h3>
                         {period.activeState && (
                           <Badge variant="default" className="bg-green-600">Activo</Badge>
                         )}
@@ -284,14 +284,14 @@ export function ConfigurationPage() {
                             className="p-4 border rounded-lg space-y-2"
                           >
                             <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-gray-900">Corte {config.noteNumber}</h4>
+                              <h4 className="font-medium text-foreground">Corte {config.noteNumber}</h4>
                               <PermissionGuard permission={PERMISSIONS.CONFIGURATION_WRITE}>
                                 <Button variant="ghost" size="sm" onClick={() => handleEditConfig(config)}>
                                   <Edit2 className="w-4 h-4" />
                                 </Button>
                               </PermissionGuard>
                             </div>
-                            <div className="text-sm text-gray-600 space-y-1">
+                            <div className="text-sm text-muted-foreground space-y-1">
                               <p>Inicio: {new Date(config.startDate).toLocaleDateString('es-ES')}</p>
                               <p>Fin: {new Date(config.endDate).toLocaleDateString('es-ES')}</p>
                             </div>
@@ -308,11 +308,13 @@ export function ConfigurationPage() {
       </Tabs>
 
       {/* Edit Config Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Configuración de Corte {editingConfig?.noteNumber}</DialogTitle>
-          </DialogHeader>
+      <AppAlertDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        title={`Editar Configuración de Corte ${editingConfig?.noteNumber}`}
+        actionText="Guardar Cambios"
+        onAction={handleUpdateConfig}
+      >
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="editStartDate">Fecha de Inicio *</Label>
@@ -333,23 +335,16 @@ export function ConfigurationPage() {
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleUpdateConfig}>
-              Guardar Cambios
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </AppAlertDialog>
 
       {/* Create Period Dialog */}
-      <Dialog open={isCreatePeriodOpen} onOpenChange={setIsCreatePeriodOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nuevo Período Académico</DialogTitle>
-          </DialogHeader>
+      <AppAlertDialog
+        open={isCreatePeriodOpen}
+        onOpenChange={setIsCreatePeriodOpen}
+        title="Nuevo Período Académico"
+        actionText="Crear Período"
+        onAction={handleCreatePeriod}
+      >
           <div className="space-y-4 py-4">
              <div className="space-y-2">
                   <Label htmlFor="periodName">Nombre del Período *</Label>
@@ -369,7 +364,7 @@ export function ConfigurationPage() {
                       onChange={(e) => setNewPeriod({ ...newPeriod, activeState: e.target.checked })}
                       className="w-4 h-4"
                     />
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-muted-foreground">
                       {newPeriod.activeState ? 'Activo' : 'Inactivo'}
                     </span>
                   </div>
@@ -395,23 +390,20 @@ export function ConfigurationPage() {
                 </div>
               </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreatePeriodOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreatePeriod}>Crear Período</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </AppAlertDialog>
 
       {/* Create Calendar Config Dialog */}
-      <Dialog open={isCreateConfigOpen} onOpenChange={setIsCreateConfigOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nueva Configuración de Corte</DialogTitle>
-          </DialogHeader>
+      <AppAlertDialog
+        open={isCreateConfigOpen}
+        onOpenChange={setIsCreateConfigOpen}
+        title="Nueva Configuración de Corte"
+        actionText="Crear Configuración"
+        onAction={handleCreateCalendarConfig}
+      >
           <div className="space-y-4 py-4">
              <div className="space-y-2">
                  <Label>Período Académico</Label>
-                 <div className="p-2 border rounded bg-gray-50 text-sm">
+                 <div className="p-2 border rounded bg-muted text-sm text-muted-foreground">
                    {periods.find(p => p.id === selectedPeriodId)?.name || 'Seleccione un período primero'}
                  </div>
              </div>
@@ -447,12 +439,7 @@ export function ConfigurationPage() {
                 </div>
                 </div>
           </div>
-          <DialogFooter>
-             <Button variant="outline" onClick={() => setIsCreateConfigOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateCalendarConfig}>Crear Configuración</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </AppAlertDialog>
 
     </div>
   );

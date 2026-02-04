@@ -29,7 +29,7 @@ export function SubjectCreateEditPage() {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-foreground">
             {isEdit ? "Editar Materia" : "Nueva Materia"}
           </h2>
           <p className="text-sm text-gray-500">

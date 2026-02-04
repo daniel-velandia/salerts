@@ -25,8 +25,9 @@ export const PasswordForm = ({ onSubmit, loading }: Props) => {
           schema={passwordSchema}
           defaultValues={defaultValues}
           onSubmit={onSubmit}
+          className="space-y-6"
         >
-          <div className="space-y-4 max-w-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AppInput
               name="currentPassword"
               label="Contraseña Actual"
@@ -46,8 +47,8 @@ export const PasswordForm = ({ onSubmit, loading }: Props) => {
               placeholder="Repite la nueva contraseña"
             />
           </div>
-          <div className="mt-6 flex justify-end">
-            <AppSubmitButton disabled={loading}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100">
+            <AppSubmitButton className="w-full sm:w-auto" disabled={loading}>
               {loading ? "Cambiando..." : "Actualizar Contraseña"}
             </AppSubmitButton>
           </div>

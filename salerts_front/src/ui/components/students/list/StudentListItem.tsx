@@ -18,8 +18,8 @@ export const StudentListItem = ({
   return (
     <button
       onClick={onClick}
-      className={`w-full p-4 text-left hover:bg-red-50/50 transition-colors flex items-center gap-3 group relative cursor-pointer ${
-        isSelected ? "bg-red-50" : ""
+      className={`w-full p-4 text-left hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-3 group relative cursor-pointer ${
+        isSelected ? "bg-red-50 dark:bg-red-900/20" : ""
       }`}
     >
       {isSelected && (
@@ -37,13 +37,13 @@ export const StudentListItem = ({
       <div className="flex-1 min-w-0">
         <p
           className={`text-sm font-medium truncate ${
-            isSelected ? "text-red-900 font-bold" : "text-gray-900"
+            isSelected ? "text-red-900 dark:text-red-100 font-bold" : "text-foreground"
           }`}
         >
           {student.name} {student.lastname}
         </p>
         <div className="flex items-center gap-2 mt-0.5">
-          <p className="text-xs text-gray-500 truncate max-w-40">
+          <p className="text-xs text-muted-foreground truncate max-w-40">
             {student.programName}
           </p>
         </div>

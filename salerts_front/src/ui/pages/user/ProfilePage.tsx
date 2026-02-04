@@ -10,8 +10,8 @@ export const ProfilePage = () => {
   return (
     <div className="space-y-6 p-6 max-w-4xl mx-auto">
       <div>
-        <h2 className="text-2xl md:text-3xl text-gray-900 font-bold">Configuración de Usuario</h2>
-        <p className="text-sm md:text-base text-gray-600">
+        <h2 className="text-2xl md:text-3xl text-foreground font-bold">Configuración de Usuario</h2>
+        <p className="text-sm md:text-base text-muted-foreground">
           Gestiona tu información personal y seguridad de la cuenta.
         </p>
       </div>

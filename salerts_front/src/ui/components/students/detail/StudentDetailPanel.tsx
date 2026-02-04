@@ -37,12 +37,12 @@ export const StudentDetailPanel = ({ student, onEdit }: Props) => {
 
   if (!student) {
     return (
-      <Card className="h-full flex items-center justify-center border-gray-200 shadow-sm bg-white">
+      <Card className="h-full flex items-center justify-center border-border shadow-sm bg-card">
         <CardContent className="text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Search className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-gray-900 font-medium">
+          <h3 className="text-foreground font-medium">
             Selecciona un estudiante
           </h3>
         </CardContent>
@@ -51,7 +51,7 @@ export const StudentDetailPanel = ({ student, onEdit }: Props) => {
   }
 
   return (
-    <Card className="border-gray-200 shadow-sm bg-white flex flex-col h-full overflow-hidden">
+    <Card className="border-border shadow-sm bg-card flex flex-col h-full overflow-hidden">
       <div className="p-6 border-b border-gray-100 shrink-0">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-4">
@@ -59,10 +59,10 @@ export const StudentDetailPanel = ({ student, onEdit }: Props) => {
               {student.studentInfo.name.charAt(0)}
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">
+              <h3 className="text-xl font-bold text-foreground">
                 {student.studentInfo.name} {student.studentInfo.lastname}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {student.studentInfo.programName}
               </p>
               <div className="flex items-center gap-2 mt-1">
@@ -123,7 +123,7 @@ export const StudentDetailPanel = ({ student, onEdit }: Props) => {
           </TabsList>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 bg-white">
+        <div className="flex-1 overflow-y-auto p-6 bg-card">
           <TabsContent value="info" className="mt-0">
             <StudentInfoTab student={student.studentInfo} />
           </TabsContent>

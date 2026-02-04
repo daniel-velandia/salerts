@@ -35,13 +35,13 @@ export function GroupCreateEditPage() {
   }));
 
   return (
-    <div className="space-y-6 p-4 md:p-6 animate-in fade-in duration-500">
+    <div className="space-y-6 py-8 px-4 max-w-3xl mx-auto animate-in fade-in duration-500">
       <div className="flex items-center gap-4">
          <Button variant="ghost" size="icon" onClick={() => navigate("/groups")}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-foreground">
             {isEdit ? "Editar Grupo" : "Nuevo Grupo"}
           </h2>
           <p className="text-sm text-gray-500">

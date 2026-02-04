@@ -6,6 +6,8 @@ interface Props {
   name: string;
   label?: string;
   type?: string;
+  min?: number;
+  max?: number;
   placeholder?: string;
   disabled?: boolean;
   icon?: ReactNode;
@@ -15,6 +17,8 @@ export const AppInput = ({
   name,
   label,
   type,
+  min,
+  max,
   placeholder,
   disabled,
   icon,
@@ -33,6 +37,8 @@ export const AppInput = ({
             <Input
               id={name}
               type={type}
+              min={min}
+              max={max}
               placeholder={placeholder}
               disabled={disabled}
               {...field}

@@ -82,16 +82,16 @@ export function ProgramsPage() {
                 </PermissionGuard>
               </div>
               <CardTitle className="mt-4 text-lg">{program.name}</CardTitle>
-              {program.code && <p className="text-sm text-gray-600">Código: {program.code}</p>}
+              {program.code && <p className="text-sm text-muted-foreground">Código: {program.code}</p>}
             </CardHeader>
             <CardContent className="space-y-3">
               {program.duration && (
                 <div className="flex items-center gap-2 text-sm">
                   <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <BookOpen className="w-4 h-4 text-gray-600" />
+                    <BookOpen className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-gray-600 text-xs">Duración</p>
+                    <p className="text-muted-foreground text-xs">Duración</p>
                     <p className="text-gray-900">{program.duration} semestres</p>
                   </div>
                 </div>
@@ -100,10 +100,10 @@ export function ProgramsPage() {
               {program.credits !== undefined && (
                 <div className="flex items-center gap-2 text-sm">
                   <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <BookOpen className="w-4 h-4 text-gray-600" />
+                    <BookOpen className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-gray-600 text-xs">Créditos</p>
+                    <p className="text-muted-foreground text-xs">Créditos</p>
                     <p className="text-gray-900">{program.credits}</p>
                   </div>
                 </div>
@@ -112,11 +112,11 @@ export function ProgramsPage() {
               {program.coordinatorId && (
                 <div className="flex items-center gap-2 text-sm pt-2 border-t">
                   <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-gray-600" />
+                    <User className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-gray-600 text-xs">Coordinador</p>
-                    <p className="text-gray-900 truncate">{getCoordinatorName(program.coordinatorId)}</p>
+                    <p className="text-muted-foreground text-xs">Coordinador</p>
+                    <p className="text-foreground truncate">{getCoordinatorName(program.coordinatorId)}</p>
                   </div>
                 </div>
               )}

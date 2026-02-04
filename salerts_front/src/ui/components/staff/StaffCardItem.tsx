@@ -33,11 +33,11 @@ export function StaffCardItem({ member, onEdit }: StaffCardItemProps) {
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-              <span className="font-medium text-gray-900">{member.name} {member.lastname}</span>
+              <span className="font-medium text-foreground">{member.name} {member.lastname}</span>
               <span className="lg:hidden text-xs text-gray-500">{member.email}</span>
             </div>
           </div>
-          <div className="hidden lg:flex lg:col-span-3 lg:order-2 items-center gap-2 text-sm text-gray-600">
+          <div className="hidden lg:flex lg:col-span-3 lg:order-2 items-center gap-2 text-sm text-muted-foreground">
             <Mail className="w-4 h-4 text-gray-400" />
             <span className="truncate" title={member.email}>{member.email}</span>
           </div>

@@ -11,6 +11,7 @@ import type { GroupFormData } from '@/domain/schemas/groupSchema';
 import { groupSchema } from '@/domain/schemas/groupSchema';
 import type { ScheduleInput, DayOfWeek } from '@/domain/models/Schedule';
 import { useFormContext } from 'react-hook-form';
+import { AppAlertDialog } from '@/ui/components/common/feedback/AppAlertDialog';
 
 const DAYS = [
   { value: 'MONDAY' as DayOfWeek, label: 'Lunes' },
@@ -67,7 +68,7 @@ const StudentSelector = ({ options }: { options: Array<{ label: string; id: stri
           <p className="text-sm text-gray-500 text-center py-4">No se encontraron estudiantes</p>
         ) : (
           filteredOptions.map((student) => (
-            <div key={student.id} className="flex items-center space-x-2 p-1 hover:bg-slate-50 rounded">
+            <div key={student.id} className="flex items-center space-x-2 p-1 hover:bg-background rounded">
               <Checkbox
                 id={student.id}
                 checked={selectedIds.includes(student.id)}
@@ -98,6 +99,7 @@ export function GroupForm({
   studentOptions = []
 }: GroupFormProps) {
   const [schedules, setSchedules] = useState<ScheduleInput[]>(initialSchedules);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [newSchedule, setNewSchedule] = useState<{
     dayOfWeek: DayOfWeek;
     startTime: string;
@@ -133,6 +135,7 @@ export function GroupForm({
 
     setSchedules([...schedules, scheduleInput]);
     setNewSchedule({ dayOfWeek: 'MONDAY', startTime: '', endTime: '' });
+    setShowScheduleDialog(false);
   };
 
   const handleRemoveSchedule = (index: number) => {
@@ -210,63 +213,75 @@ export function GroupForm({
         {/* Horarios */}
         <Card>
           <CardHeader>
-            <CardTitle>Horarios de Clase</CardTitle>
-            <CardDescription>
-              Define los días y horas en que se dicta la materia
-            </CardDescription>
+             <div className="flex items-center justify-between">
+                <div>
+                   <CardTitle>Horarios de Clase</CardTitle>
+                    <CardDescription>
+                      Define los días y horas en que se dicta la materia
+                    </CardDescription>
+                </div>
+                <Button type="button" variant="secondary" onClick={() => setShowScheduleDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Agregar Horario
+                </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Formulario para agregar horario */}
-            <div className="p-4 bg-gray-50 rounded-lg space-y-4">
-              <h4 className="font-medium text-gray-900">Agregar Horario</h4>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="dayOfWeek">Día de la Semana</Label>
-                  <select
-                    id="dayOfWeek"
-                    className="w-full px-3 py-2 border rounded-md bg-white"
-                    value={newSchedule.dayOfWeek}
-                    onChange={(e) => setNewSchedule({
-                      ...newSchedule,
-                      dayOfWeek: e.target.value as DayOfWeek
-                    })}
-                  >
-                    {DAYS.map((day) => (
-                      <option key={day.value} value={day.value}>
-                        {day.label}
-                      </option>
-                    ))}
-                  </select>
+            
+            <AppAlertDialog
+                open={showScheduleDialog}
+                onOpenChange={setShowScheduleDialog}
+                title="Agregar Horario"
+                actionText="Agregar"
+                onAction={handleAddSchedule}
+                description="Selecciona el día y las horas de clase."
+            >
+                 <div className="grid grid-cols-1 gap-4 py-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="dayOfWeek">Día de la Semana</Label>
+                        <select
+                            id="dayOfWeek"
+                            className="w-full px-3 py-2 border rounded-md bg-background"
+                            value={newSchedule.dayOfWeek}
+                            onChange={(e) => setNewSchedule({
+                            ...newSchedule,
+                            dayOfWeek: e.target.value as DayOfWeek
+                            })}
+                        >
+                            {DAYS.map((day) => (
+                            <option key={day.value} value={day.value}>
+                                {day.label}
+                            </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                         <div className="space-y-2">
+                            <Label htmlFor="startTime">Hora Inicio</Label>
+                            <Input
+                                id="startTime"
+                                type="time"
+                                value={newSchedule.startTime}
+                                onChange={(e) => setNewSchedule({ ...newSchedule, startTime: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="endTime">Hora Fin</Label>
+                            <Input
+                                id="endTime"
+                                type="time"
+                                value={newSchedule.endTime}
+                                onChange={(e) => setNewSchedule({ ...newSchedule, endTime: e.target.value })}
+                            />
+                        </div>
+                    </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="startTime">Hora Inicio</Label>
-                  <Input
-                    id="startTime"
-                    type="time"
-                    value={newSchedule.startTime}
-                    onChange={(e) => setNewSchedule({ ...newSchedule, startTime: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="endTime">Hora Fin</Label>
-                  <Input
-                    id="endTime"
-                    type="time"
-                    value={newSchedule.endTime}
-                    onChange={(e) => setNewSchedule({ ...newSchedule, endTime: e.target.value })}
-                  />
-                </div>
-              </div>
-              <Button type="button" variant="secondary" onClick={handleAddSchedule} className="w-full md:w-auto">
-                <Plus className="w-4 h-4 mr-2" />
-                Agregar Horario
-              </Button>
-            </div>
+            </AppAlertDialog>
 
             {/* Lista de horarios agregados */}
             {schedules.length > 0 && (
               <div className="space-y-2">
-                <h4 className="font-medium text-gray-900">Horarios Configurados</h4>
+                <h4 className="font-medium text-foreground">Horarios Configurados</h4>
                 <div className="space-y-2">
                   {schedules.map((schedule, index) => (
                     <div
@@ -277,7 +292,7 @@ export function GroupForm({
                         <Badge variant="secondary">
                           {DAYS.find(d => d.value === schedule.dayOfWeek)?.label}
                         </Badge>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           {schedule.startTime} - {schedule.endTime}
                         </span>
                       </div>
@@ -305,8 +320,8 @@ export function GroupForm({
         </Card>
 
         {/* Botones de acción */}
-        <div className="flex justify-end pt-4">
-          <AppSubmitButton disabled={isLoading}>
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100">
+          <AppSubmitButton className="w-full sm:w-auto" disabled={isLoading}>
             Guardar Grupo
           </AppSubmitButton>
         </div>

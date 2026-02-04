@@ -1,15 +1,9 @@
-import { emptyLogin, type Login } from "@/domain/models/auth/Login";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  FieldGroup,
-} from "./shadcn";
+import { cn } from "@/ui/components/shadcn";
+import { Card, CardContent } from "@/ui/components/shadcn/card";
+import { AppForm, AppInput, AppSubmitButton } from "./common";
 import { z } from "zod";
 import type { SubmitHandler } from "react-hook-form";
-import { AppForm, AppInput, AppSubmitButton } from "./common";
+import type { Login } from "@/domain/models/auth/Login";
 
 const loginSchema = z.object({
   email: z.email("Correo inválido").min(1, "El correo es obligatorio"),
@@ -17,52 +11,66 @@ const loginSchema = z.object({
 });
 
 interface Props {
+  className?: string;
   onSubmit: SubmitHandler<Login>;
 }
 
-export const LoginForm = ({ onSubmit }: Props) => {
+export function LoginForm({
+  className,
+  onSubmit,
+  ...props
+}: Props) {
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader className="text-left">
-          <CardTitle>Inicia sesión en tu cuenta</CardTitle>
-          <CardDescription>
-            Ingresa tu correo electrónico para acceder a tu cuenta
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent>
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <Card className="overflow-hidden p-0">
+        <CardContent className="grid p-0 md:grid-cols-2">
           <AppForm<Login>
             schema={loginSchema}
-            defaultValues={emptyLogin}
+            defaultValues={{ email: "", password: "" }}
             onSubmit={onSubmit}
+            className="p-6 md:p-8 flex flex-col gap-6"
           >
-            <FieldGroup>
-              <AppInput
-                name="email"
-                label="Correo"
-                type="email"
-                placeholder="nombre@ejemplo.com"
-              />
-
-              <AppInput name="password" label="Contraseña" type="password" />
-
-              <AppSubmitButton
-                description={
-                  <>
-                    ¿No tienes cuenta?{" "}
-                    <a href="#" className="underline">
-                      Regístrate
-                    </a>
-                  </>
-                }
-              >
-                Ingresar
-              </AppSubmitButton>
-            </FieldGroup>
+              <div className="flex flex-col items-center gap-2 text-center">
+                <h1 className="text-2xl font-bold">Bienvenido</h1>
+                <p className="text-muted-foreground text-balance">
+                  Ingresa a tu cuenta de SalertS
+                </p>
+              </div>
+              
+              <div className="flex flex-col gap-6">
+                <AppInput 
+                  name="email" 
+                  label="Email" 
+                  type="email" 
+                  placeholder="m@example.com" 
+                />
+                
+                <AppInput 
+                  name="password" 
+                  label="Contraseña" 
+                  type="password" 
+                />
+                
+                <AppSubmitButton>
+                   Ingresar
+                </AppSubmitButton>
+              </div>
           </AppForm>
+
+          <div className="bg-muted relative hidden md:block">
+            <img
+              src="/fesc_claro.jpg"
+              alt="FESC Claro"
+              className="absolute inset-0 h-full w-full object-cover dark:hidden"
+            />
+            <img
+              src="/fesc_oscuro.jpg"
+              alt="FESC Oscuro"
+              className="absolute inset-0 h-full w-full object-cover hidden dark:block"
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}

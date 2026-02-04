@@ -41,6 +41,7 @@ export function SubjectForm({ onSubmit, defaultValues, programs, isEdit }: Subje
                 name="credits" 
                 label="Créditos *" 
                 type="number"
+                min={0}
                 placeholder="Ej. 3" 
             />
             <AppSelect

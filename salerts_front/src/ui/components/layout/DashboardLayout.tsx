@@ -5,6 +5,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/ui/components/shadcn";
+import { ModeToggle } from "@/ui/components/mode-toggle";
 import { Outlet } from "react-router-dom";
 
 export default function DashboardLayout() {
@@ -13,12 +14,15 @@ export default function DashboardLayout() {
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sticky top-0 z-10">
-          <div className="flex items-center gap-2 px-4">
+          <div className="flex items-center gap-2 px-4 w-full">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            <h1 className="text-sm font-medium text-muted-foreground">
+            <h1 className="text-sm font-medium text-muted-foreground hidden sm:block">
               Sistema de Alertas Académicas
             </h1>
+            <div className="ml-auto">
+              <ModeToggle />
+            </div>
           </div>
         </header>
 

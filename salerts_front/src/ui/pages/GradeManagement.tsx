@@ -1,4 +1,4 @@
-import { Filter, Plus, Save, X, FileText } from "lucide-react";
+import { Filter, Save, X, FileText, Upload, MoreHorizontal, Pencil } from "lucide-react";
 import { Button } from "@/ui/components/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/ui/components/shadcn/card";
 import { useGradeManagement } from "@/hooks/grade/useGradeManagement";
@@ -10,6 +10,12 @@ import { PERMISSIONS } from "@/domain/constants/permissions";
 import { PermissionGuard } from "@/ui/components/auth/PermissionGuard";
 import { AppForm, AppSelect, AppSubmitButton } from "@/ui/components/common";
 import { gradeFilterSchema, type GradeFilterFormValues } from "@/domain/schemas/gradeFilterSchema";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/ui/components/shadcn/dropdown-menu";
 
 export function GradeManagement() {
   const { hasPermission } = usePermissions();
@@ -40,27 +46,35 @@ export function GradeManagement() {
       {/* Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Gestión de Calificaciones</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Gestión de Calificaciones</h2>
           <p className="text-muted-foreground">Administra y evalúa el desempeño académico.</p>
         </div>
 
         <div className="flex gap-2">
           {!isAssigning ? (
-            <>
-              <Button 
-                className="bg-green-600 hover:bg-green-700 text-white"
-                onClick={downloadGrades}
-                disabled={isDownloading || !filters.groupId || filters.groupId === 'all'}
-              >
-                <FileText className="w-4 h-4 mr-2" /> 
-                {isDownloading ? "Exportando..." : "Exportar"}
-              </Button>
-              <PermissionGuard permission={PERMISSIONS.GRADES_WRITE}>
-                <Button onClick={() => setIsAssigning(true)}>
-                  <Plus className="w-4 h-4 mr-2" /> Asignar Notas
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="default">
+                  Acciones <MoreHorizontal className="ml-2 h-4 w-4" />
                 </Button>
-              </PermissionGuard>
-            </>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={downloadGrades} disabled={isDownloading || !filters.groupId || filters.groupId === 'all'}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Generar Reporte
+                </DropdownMenuItem>
+                <PermissionGuard permission={PERMISSIONS.GRADES_WRITE}>
+                    <DropdownMenuItem>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Subir Notas
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsAssigning(true)}>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Modificar Notas
+                    </DropdownMenuItem>
+                </PermissionGuard>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <>
               <Button variant="ghost" onClick={cancelChanges}>
@@ -78,7 +92,7 @@ export function GradeManagement() {
       <GradeStatsCards {...stats} />
 
       {/* Filters Section */}
-      <Card>
+      <Card className={isAssigning ? "pointer-events-none opacity-60" : ""}>
         <CardContent className="pt-6">
           <AppForm<GradeFilterFormValues>
             schema={gradeFilterSchema}
@@ -157,10 +171,10 @@ export function GradeManagement() {
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {grade.studentName}
                       </p>
-                      <p className="text-xs text-gray-600 truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {grade.subjectName}
                       </p>
                     </div>
@@ -179,13 +193,13 @@ export function GradeManagement() {
                           type="number"
                           step="0.1"
                           min={0}
-                          max={grade.maxScore}
+                          max={5}
                           className="w-full border rounded px-2 py-1"
                           value={getValue(grade, term)}
                           onChange={(e) => handleEditChange(grade.id, term, e.target.value)}
                         />
                       ) : (
-                        <p className="text-gray-900 font-medium">
+                        <p className="text-foreground font-medium">
                           {getValue(grade, term).toFixed(1)}
                         </p>
                       )}

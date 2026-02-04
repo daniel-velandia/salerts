@@ -11,7 +11,7 @@ export function AppEmptyState({
   children,
   transparent = false
 }: AppEmptyStateProps) {
-  const bgClass = transparent ? "bg-transparent border-transparent" : "bg-gray-50 border-gray-200 border-dashed";
+  const bgClass = transparent ? "bg-transparent border-transparent" : "bg-muted border-border border-dashed";
   
   return (
     <div className={`text-center py-12 rounded-lg border ${bgClass} text-gray-500`}>

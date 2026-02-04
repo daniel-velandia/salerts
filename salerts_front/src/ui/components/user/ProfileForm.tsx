@@ -29,6 +29,7 @@ export const ProfileForm = ({ profile, onSubmit, loading }: Props) => {
           defaultValues={defaultValues}
           onSubmit={onSubmit}
           key={JSON.stringify(defaultValues)}
+          className="space-y-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AppInput
@@ -52,8 +53,8 @@ export const ProfileForm = ({ profile, onSubmit, loading }: Props) => {
               placeholder="Tu dirección"
             />
           </div>
-          <div className="mt-6 flex justify-end">
-            <AppSubmitButton disabled={loading}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100">
+            <AppSubmitButton className="w-full sm:w-auto" disabled={loading}>
               {loading ? "Guardando..." : "Guardar Cambios"}
             </AppSubmitButton>
           </div>

@@ -41,26 +41,26 @@ export const GradesTabContent = ({ enrollments }: Props) => {
                 className="border-b border-gray-50 hover:bg-transparent"
               >
                 <TableCell className="pl-0">
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-foreground">
                     {enr.subjectName}
                   </div>
                   <div className="text-xs text-gray-500">
                     {enr.subjectCode} • {enr.groupName}
                   </div>
                 </TableCell>
-                <TableCell className="text-center font-mono text-gray-600">
+                <TableCell className="text-center font-mono text-muted-foreground">
                   {enr.term1}
                 </TableCell>
-                <TableCell className="text-center font-mono text-gray-600">
+                <TableCell className="text-center font-mono text-muted-foreground">
                   {enr.term2}
                 </TableCell>
-                <TableCell className="text-center font-mono text-gray-600">
+                <TableCell className="text-center font-mono text-muted-foreground">
                   {enr.term3}
                 </TableCell>
-                <TableCell className="text-center font-mono text-gray-600">
+                <TableCell className="text-center font-mono text-muted-foreground">
                   {enr.term4}
                 </TableCell>
-                <TableCell className="text-right font-bold text-gray-900 pr-0">
+                <TableCell className="text-right font-bold text-foreground pr-0">
                   {enr.definitive}
                 </TableCell>
               </TableRow>

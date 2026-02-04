@@ -36,10 +36,10 @@ export function StaffCreateEditPage() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             {isEdit ? "Editar Personal" : "Nuevo Personal"}
           </h1>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {isEdit
               ? "Actualiza la información del personal"
               : "Registra un nuevo personal en el sistema"}

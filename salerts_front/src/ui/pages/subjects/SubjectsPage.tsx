@@ -102,11 +102,11 @@ export function SubjectsPage() {
                         {subject.code}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 font-medium text-gray-900">{subject.name}</td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 font-medium text-foreground">{subject.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
                       {getProgramName(subject.programId)}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-muted-foreground">
                       {subject.credits}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -144,7 +144,7 @@ export function SubjectsPage() {
                     <Badge variant="secondary">{subject.credits} créditos</Badge>
                   </div>
                   <p className="text-gray-900 font-medium mb-1">{subject.name}</p>
-                  <p className="text-sm text-gray-600">{getProgramName(subject.programId)}</p>
+                  <p className="text-sm text-muted-foreground">{getProgramName(subject.programId)}</p>
                 </div>
                 <PermissionGuard permission={PERMISSIONS.SUBJECTS_WRITE}>
                   <Button
