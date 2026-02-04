@@ -1,4 +1,5 @@
-import { Filter, Save, X, FileText, Upload, MoreHorizontal, Pencil } from "lucide-react";
+import { useRef } from "react";
+import { Filter, Save, X, FileText, Upload, MoreHorizontal, Pencil, Download } from "lucide-react";
 import { Button } from "@/ui/components/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/ui/components/shadcn/card";
 import { useGradeManagement } from "@/hooks/grade/useGradeManagement";
@@ -15,6 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/ui/components/shadcn/dropdown-menu";
 
 export function GradeManagement() {
@@ -39,7 +41,26 @@ export function GradeManagement() {
     getValue,
     downloadGrades,
     isDownloading,
+    downloadTemplate,
+    uploadFile,
+    isUploading,
+    isDownloadingTemplate,
   } = useGradeManagement();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadFile(file);
+      // Reset input so same file can be selected again if needed
+      e.target.value = "";
+    }
+  };
 
   return (
     <div className="space-y-6 p-2 md:p-6 animate-in fade-in">
@@ -64,7 +85,12 @@ export function GradeManagement() {
                   Generar Reporte
                 </DropdownMenuItem>
                 <PermissionGuard permission={PERMISSIONS.GRADES_WRITE}>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem disabled={isDownloadingTemplate} onClick={downloadTemplate}>
+                      <Download className="w-4 h-4 mr-2" />
+                      Descargar Plantilla
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem disabled={isUploading} onClick={handleUploadClick}>
                       <Upload className="w-4 h-4 mr-2" />
                       Subir Notas
                     </DropdownMenuItem>
@@ -211,6 +237,14 @@ export function GradeManagement() {
           );
         })}
       </div>
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".xlsx, .xls"
+        onChange={handleFileChange}
+      />
     </div>
   );
 }

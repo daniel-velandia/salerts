@@ -15,8 +15,17 @@ import type { Group } from "@/domain/models/Group";
 import type { StaffResponse } from "@/domain/models/staff/StaffResponse";
 import type { Option } from "@/domain/models/Option";
 import type { GradeFilterFormValues } from "@/domain/schemas/gradeFilterSchema";
+import { getActiveTermStatus } from "@/infraestructure/services/optionsApi";
+import { uploadGradeFile, downloadGradeTemplate } from "@/infraestructure/services/gradeFilesApi";
+import type { ActiveStatusResponse, GradeFileUploadResponse } from "@/domain/models/files/GradeFileResponses";
 
 const fetchGradesWrapper = (params: [string, string?]) => getGradesByGroup(params[0], params[1]);
+
+const downloadTemplateApi = (args: { groupId: string | number, noteNumber: number }) =>
+  downloadGradeTemplate(args.groupId, args.noteNumber);
+
+const uploadFileApi = (args: { groupId: string | number, noteNumber: number, file: File }) =>
+  uploadGradeFile(args.groupId, args.noteNumber, args.file);
 
 export const useGradeManagement = () => {
   const dispatch = useAppDispatch();
@@ -57,6 +66,37 @@ export const useGradeManagement = () => {
     call: fetchGrades,
   } = useApi<Grade[], [string, string?]>(fetchGradesWrapper, { autoFetch: false, params: ["", undefined] });
 
+  // Obtener Estado Activo del Grupo
+  const {
+    data: activeStatus,
+    call: fetchActiveStatus,
+  } = useApi<ActiveStatusResponse, string | number>(getActiveTermStatus, {
+    autoFetch: false,
+    params: 0
+  });
+
+  // Download Template
+  const {
+    loading: downloadingTemplate,
+    call: downloadTemplateCall,
+    data: templateBlob,
+    error: templateError
+  } = useApi<Blob, { groupId: string | number, noteNumber: number }>(downloadTemplateApi, { 
+    autoFetch: false,
+    params: { groupId: 0, noteNumber: 0 } 
+  });
+
+  // Upload File
+  const {
+    loading: uploadingFile,
+    call: uploadFileCall,
+    data: uploadResponse,
+    error: uploadError
+  } = useApi<GradeFileUploadResponse, { groupId: string | number, noteNumber: number, file: File }>(uploadFileApi, { 
+    autoFetch: false,
+    params: { groupId: 0, noteNumber: 0, file: new File([], "") }
+  });
+
   // Map Options
   const groupOptions: Option[] = useMemo(() => [
     ...(groups || []).map(g => ({ id: g.id, label: `${g.subjectName} - ${g.groupName}` }))
@@ -87,10 +127,11 @@ export const useGradeManagement = () => {
   useEffect(() => {
     if (filters.groupId && filters.groupId !== "all") {
       fetchGrades([filters.groupId, filters.teacherId]);
+      fetchActiveStatus(filters.groupId);
     } else {
       setLocalGrades([]); // Clear if no group selected or 'all'
     }
-  }, [filters.groupId, filters.teacherId, fetchGrades]);
+  }, [filters.groupId, filters.teacherId, fetchGrades, fetchActiveStatus]);
 
   // Sincronizar datos remotos al estado local cuando llegan
   useEffect(() => {
@@ -101,12 +142,55 @@ export const useGradeManagement = () => {
 
   // Manejar estados de carga global
   useEffect(() => {
-    const isLoading = loadingGroups || loadingStaff || isLoadingGrades;
+    const isLoading = loadingGroups || loadingStaff || isLoadingGrades || downloadingTemplate || uploadingFile;
     dispatch(setLoading(isLoading));
     if (loadError) {
       dispatch(setError(loadError));
     }
   }, [loadingGroups, loadingStaff, isLoadingGrades, loadError, dispatch]);
+
+  // Reactive Handlers for Download/Upload
+  useEffect(() => {
+    if (templateBlob && activeStatus) {
+        const url = window.URL.createObjectURL(templateBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `plantilla_notas_grupo_${filters.groupId}_corte_${activeStatus.activeTermNumber}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success("Plantilla descargada correctamente");
+    }
+  }, [templateBlob]);
+
+  useEffect(() => {
+    if (uploadResponse) {
+        if (uploadResponse.errorDetails && uploadResponse.errorDetails.length > 0) {
+            if (uploadResponse.gradesSaved > 0) {
+              toast.warning(`Se guardaron ${uploadResponse.gradesSaved} notas con ${uploadResponse.errorsCount} errores.`);
+            } else {
+              toast.error(`Error al procesar el archivo: ${uploadResponse.errorsCount} errores encontrados.`);
+            }
+            console.error("Upload details:", uploadResponse);
+        } else {
+            toast.success(`Carga exitosa: ${uploadResponse.gradesSaved} notas guardadas.`);
+        }
+        // Refresh grades
+        fetchGrades([filters.groupId, filters.teacherId]);
+    }
+  }, [uploadResponse]);
+
+  useEffect(() => {
+      if (templateError) {
+          console.error(templateError);
+          toast.error("Error al descargar la plantilla");
+      }
+      if (uploadError) {
+          console.error(uploadError);
+          toast.error("Error al subir el archivo de notas");
+      }
+  }, [templateError, uploadError]);
 
 
   // --- 4. Stats ---
@@ -235,5 +319,39 @@ export const useGradeManagement = () => {
       }
     },
     isDownloading,
+    // File Upload & Template
+    activeStatus,
+    isUploading: uploadingFile,
+    isDownloadingTemplate: downloadingTemplate,
+    downloadTemplate: () => {
+       if (!filters.groupId || filters.groupId === 'all' || !activeStatus) {
+        toast.error("Selecciona un grupo válido para descargar la plantilla");
+        return;
+      }
+      downloadTemplateCall({
+        groupId: filters.groupId, 
+        noteNumber: activeStatus.activeTermNumber
+      });
+    },
+    uploadFile: (file: File) => {
+      if (!filters.groupId || filters.groupId === 'all' || !activeStatus) {
+         toast.error("Información del grupo no disponible");
+         return;
+      }
+
+      // Validate Excel extension
+      const validExtensions = ['.xls', '.xlsx'];
+      const fileName = file.name.toLowerCase();
+      if (!validExtensions.some(ext => fileName.endsWith(ext))) {
+         toast.error("Solo se permiten archivos Excel (.xls, .xlsx)");
+         return;
+      }
+
+      uploadFileCall({
+        groupId: filters.groupId, 
+        noteNumber: activeStatus.activeTermNumber,
+        file
+      });
+    }
   };
 };

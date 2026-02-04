@@ -38,3 +38,15 @@ export const apiPatch = <T>(path: string, body?: any, opts?: ApiOptions) =>
 
 export const apiDelete = <T>(path: string, opts?: ApiOptions) =>
   api<T>(path, { method: "DELETE", ...opts });
+
+export const apiPostFormData = <T>(
+  path: string,
+  formData: FormData,
+  opts?: ApiOptions
+) =>
+  api<T>(path, {
+    method: "POST",
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" },
+    ...opts,
+  });
