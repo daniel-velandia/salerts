@@ -32,4 +32,8 @@ public class Grade extends BaseEntity {
 
     @Column(name = "registration_date")
     private LocalDateTime registrationDate;
+
+    @Column(name = "last_modified_date")
+    private LocalDateTime lastModifiedDate;
+    
 }

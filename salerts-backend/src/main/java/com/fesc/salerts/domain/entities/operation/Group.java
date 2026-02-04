@@ -20,6 +20,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Group extends BaseEntity {
 
+    @Column(name = "name", length = 100)
+    private String name;
+
     @ManyToOne
     @JoinColumn(name = "subject_id")
     private Subject subject;

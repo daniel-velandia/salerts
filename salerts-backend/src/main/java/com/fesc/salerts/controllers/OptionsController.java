@@ -1,6 +1,8 @@
 package com.fesc.salerts.controllers;
 
+import com.fesc.salerts.dtos.responses.ActiveTermStatusResponse;
 import com.fesc.salerts.dtos.responses.GlobalOptionsResponse;
+import com.fesc.salerts.services.interfaces.CalendarConfigService;
 import com.fesc.salerts.services.interfaces.OptionsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class OptionsController {
 
     private final OptionsService optionsService;
+    private final CalendarConfigService calendarConfigService;
 
     @GetMapping("/all")
     public ResponseEntity<GlobalOptionsResponse> getAllOptions() {

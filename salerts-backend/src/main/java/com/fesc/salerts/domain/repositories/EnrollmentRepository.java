@@ -19,6 +19,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     Optional<Enrollment> findByIdentificator(UUID identificator);
 
+    List<Enrollment> findByGroupId(Long groupId);
+
     boolean existsByGroupIdentificatorAndStudentIdentificator(UUID groupId, UUID studentId);
 
     @Query("""

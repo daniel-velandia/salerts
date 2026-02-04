@@ -2,6 +2,7 @@ package com.fesc.salerts.services.interfaces;
 
 import com.fesc.salerts.dtos.requests.CreateCalendarBatchRequest;
 import com.fesc.salerts.dtos.requests.CreateCalendarConfigRequest;
+import com.fesc.salerts.dtos.responses.ActiveTermStatusResponse;
 import com.fesc.salerts.dtos.responses.CalendarConfigResponse;
 import java.time.LocalDateTime;
 import java.util.List;

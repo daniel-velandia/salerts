@@ -1,4 +1,4 @@
-package com.fesc.salerts.dto.response;
+package com.fesc.salerts.dtos.responses;
 
 import lombok.Builder;
 import lombok.Data;

@@ -4,8 +4,10 @@ import com.fesc.salerts.domain.entities.configPeriod.AcademicPeriod;
 import com.fesc.salerts.domain.entities.configPeriod.CalendarConfig;
 import com.fesc.salerts.domain.repositories.AcademicPeriodRepository;
 import com.fesc.salerts.domain.repositories.CalendarConfigRepository;
+import com.fesc.salerts.domain.repositories.GroupRepository;
 import com.fesc.salerts.dtos.requests.CreateCalendarBatchRequest;
 import com.fesc.salerts.dtos.requests.CreateCalendarConfigRequest;
+import com.fesc.salerts.dtos.responses.ActiveTermStatusResponse;
 import com.fesc.salerts.dtos.responses.CalendarConfigResponse;
 import com.fesc.salerts.infrastructure.exceptions.ResourceNotFoundException;
 import com.fesc.salerts.services.interfaces.CalendarConfigService;
@@ -24,6 +26,7 @@ public class CalendarConfigServiceImpl implements CalendarConfigService {
 
     private final CalendarConfigRepository calendarConfigRepository;
     private final AcademicPeriodRepository academicPeriodRepository;
+    private final GroupRepository groupRepository;
 
     @Override
     @Transactional

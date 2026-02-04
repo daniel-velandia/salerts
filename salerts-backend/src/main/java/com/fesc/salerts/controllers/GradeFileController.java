@@ -3,8 +3,6 @@ package com.fesc.salerts.controllers;
 import com.fesc.salerts.domain.enums.AppPermission;
 import com.fesc.salerts.dtos.responses.BulkUploadResponse;
 import com.fesc.salerts.services.interfaces.GradeFileService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
