@@ -221,7 +221,7 @@ public class GradeFileServiceImpl implements GradeFileService {
 
             if (!gradesToSave.isEmpty()) {
                 gradeRepository.saveAll(gradesToSave);
-                
+
                 gradeRepository.flush();
 
                 Set<Enrollment> affectedEnrollments = gradesToSave.stream()
@@ -243,7 +243,8 @@ public class GradeFileServiceImpl implements GradeFileService {
     }
 
     private void updateBatchFinalGrades(List<Enrollment> enrollments) {
-        if (enrollments.isEmpty()) return;
+        if (enrollments.isEmpty())
+            return;
 
         List<Grade> allGradesHistory = gradeRepository.findByEnrollmentIn(enrollments);
 
@@ -254,9 +255,9 @@ public class GradeFileServiceImpl implements GradeFileService {
 
         for (Enrollment enrollment : enrollments) {
             List<Grade> studentGrades = gradesByEnrollment.getOrDefault(enrollment, Collections.emptyList());
-            
+
             BigDecimal newFinalGrade = calculateWeightedAverage(studentGrades);
-            
+
             if (enrollment.getFinalGrade() == null || enrollment.getFinalGrade().compareTo(newFinalGrade) != 0) {
                 enrollment.setFinalGrade(newFinalGrade);
                 enrollmentsToUpdate.add(enrollment);
@@ -379,15 +380,33 @@ public class GradeFileServiceImpl implements GradeFileService {
     private BigDecimal getCellNumericValue(Cell cell) {
         if (cell == null)
             return null;
-        if (cell.getCellType() == CellType.NUMERIC)
+
+        if (cell.getCellType() == CellType.NUMERIC) {
             return BigDecimal.valueOf(cell.getNumericCellValue()).setScale(2, RoundingMode.HALF_UP);
+        }
+
         if (cell.getCellType() == CellType.STRING) {
+            String val = cell.getStringCellValue().trim();
+            if (val.isEmpty())
+                return null;
+
             try {
-                return new BigDecimal(cell.getStringCellValue().replace(",", ".")).setScale(2, RoundingMode.HALF_UP);
+                val = val.replace(",", ".");
+
+                return new BigDecimal(val).setScale(2, RoundingMode.HALF_UP);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        if (cell.getCellType() == CellType.FORMULA) {
+            try {
+                return BigDecimal.valueOf(cell.getNumericCellValue()).setScale(2, RoundingMode.HALF_UP);
             } catch (Exception e) {
                 return null;
             }
         }
+
         return null;
     }
 }
