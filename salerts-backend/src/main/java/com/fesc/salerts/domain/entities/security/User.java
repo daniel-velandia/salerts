@@ -5,10 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import com.fesc.salerts.domain.entities.BaseEntity;
 import com.fesc.salerts.domain.entities.academic.Program;
+import com.fesc.salerts.domain.entities.operation.Enrollment;
 
 @Entity
 @Table(name = "users")
@@ -36,6 +39,9 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private String password;
+
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+    private List<Enrollment> enrollments = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

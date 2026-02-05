@@ -1,17 +1,17 @@
 package com.fesc.salerts.infrastructure.bootstrap;
 
 import com.fesc.salerts.domain.entities.academic.Program;
-import com.fesc.salerts.domain.entities.academic.Subject;
 import com.fesc.salerts.domain.entities.configPeriod.AcademicPeriod;
 import com.fesc.salerts.domain.entities.operation.Enrollment;
 import com.fesc.salerts.domain.entities.operation.Group;
-import com.fesc.salerts.domain.entities.operation.GroupSchedule;
 import com.fesc.salerts.domain.entities.security.Role;
 import com.fesc.salerts.domain.entities.security.User;
+import com.fesc.salerts.domain.enums.AppRole;
 import com.fesc.salerts.dtos.requests.StudentFilter;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,79 +19,61 @@ import java.util.UUID;
 
 public class StudentSpecification {
 
-    public static Specification<User> getStudentsByFilter(StudentFilter filter, UUID currentPeriodId) {
-        return (root, query, cb) -> {
+    public static Specification<User> getStudentsByFilter(StudentFilter filter, UUID activePeriodId) {
+        return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            Join<User, Role> rolesJoin = root.join("roles");
-            predicates.add(cb.equal(rolesJoin.get("name"), "STUDENT"));
 
-            if (StringUtils.hasText(filter.searchTerm())) {
-                String searchLike = "%" + filter.searchTerm().toLowerCase().trim() + "%";
-                Expression<String> fullName = cb.concat(cb.concat(cb.lower(root.get("name")), " "), cb.lower(root.get("lastname")));
-                Expression<String> reverseName = cb.concat(cb.concat(cb.lower(root.get("lastname")), " "), cb.lower(root.get("name")));
-                
-                predicates.add(cb.or(
-                        cb.like(fullName, searchLike),
-                        cb.like(reverseName, searchLike),
-                        cb.like(root.get("nit"), searchLike)
+            Join<User, Role> rolesJoin = root.join("roles", JoinType.INNER);
+            predicates.add(criteriaBuilder.equal(rolesJoin.get("name"), AppRole.STUDENT.name()));
+
+
+            if (filter.searchTerm() != null && !filter.searchTerm().isBlank()) {
+                String likePattern = "%" + filter.searchTerm().toLowerCase() + "%";
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), likePattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("lastname")), likePattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("nit")), likePattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), likePattern)
                 ));
             }
 
             if (filter.programId() != null) {
                 Join<User, Program> programJoin = root.join("program", JoinType.LEFT);
-                predicates.add(cb.equal(programJoin.get("identificator"), filter.programId()));
+                predicates.add(criteriaBuilder.equal(programJoin.get("identificator"), filter.programId()));
             }
-        
-            boolean hasAcademicFilters = filter.subjectId() != null || 
-                                       filter.groupScheduleId() != null || 
-                                       filter.dayOfWeek() != null || 
-                                       filter.teacherId() != null;
 
-            if (hasAcademicFilters && currentPeriodId != null) {
+            boolean hasAcademicFilters = filter.groupScheduleId() != null || 
+                                         filter.subjectId() != null || 
+                                         filter.teacherId() != null;
+
+            if (hasAcademicFilters) {
                 
-                Subquery<Integer> subquery = query.subquery(Integer.class);
-                Root<Enrollment> enrollmentRoot = subquery.from(Enrollment.class);
-                Join<Enrollment, Group> groupJoin = enrollmentRoot.join("group");
+                Join<User, Enrollment> enrollmentJoin = root.join("enrollments", JoinType.INNER);
                 
-                subquery.select(cb.literal(1));
+                Join<Enrollment, Group> groupJoin = enrollmentJoin.join("group", JoinType.INNER);
 
-                List<Predicate> subPredicates = new ArrayList<>();
-
-                subPredicates.add(cb.equal(enrollmentRoot.get("student"), root));
-
-                Join<Group, AcademicPeriod> periodJoin = groupJoin.join("academicPeriod");
-                subPredicates.add(cb.equal(periodJoin.get("identificator"), currentPeriodId));
-
-                if (filter.teacherId() != null) {
-                    Join<Group, User> teacherJoin = groupJoin.join("teacher");
-                    subPredicates.add(cb.equal(teacherJoin.get("identificator"), filter.teacherId()));
+                if (activePeriodId != null) {
+                    Join<Group, AcademicPeriod> periodJoin = groupJoin.join("academicPeriod", JoinType.INNER);
+                    predicates.add(criteriaBuilder.equal(periodJoin.get("identificator"), activePeriodId));
                 }
 
                 if (filter.subjectId() != null) {
-                    Join<Group, Subject> subjectJoin = groupJoin.join("subject");
-                    subPredicates.add(cb.equal(subjectJoin.get("identificator"), filter.subjectId()));
+                    predicates.add(criteriaBuilder.equal(groupJoin.get("subject").get("identificator"), filter.subjectId()));
                 }
 
-                if (filter.groupScheduleId() != null || filter.dayOfWeek() != null) {
-                    ListJoin<Group, GroupSchedule> scheduleJoin = groupJoin.joinList("schedules");
-                    
-                    if (filter.groupScheduleId() != null) {
-                        subPredicates.add(cb.equal(scheduleJoin.get("identificator"), filter.groupScheduleId()));
-                    }
-                    if (filter.dayOfWeek() != null) {
-                        subPredicates.add(cb.equal(scheduleJoin.get("dayOfWeek"), filter.dayOfWeek()));
-                    }
+                if (filter.teacherId() != null) {
+                    predicates.add(criteriaBuilder.equal(groupJoin.get("teacher").get("identificator"), filter.teacherId()));
                 }
 
-                subquery.where(subPredicates.toArray(new Predicate[0]));
-                
-                predicates.add(cb.exists(subquery));
+                if (filter.groupScheduleId() != null) {
+                    predicates.add(criteriaBuilder.equal(groupJoin.get("identificator"), filter.groupScheduleId()));
+                }
             }
 
             query.distinct(true);
-            
-            return cb.and(predicates.toArray(new Predicate[0]));
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
 }

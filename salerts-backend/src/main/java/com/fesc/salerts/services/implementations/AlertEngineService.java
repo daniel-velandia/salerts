@@ -27,7 +27,7 @@ public class AlertEngineService {
     private final GradeRepository gradeRepository;
     private final AlertRepository alertRepository;
 
-    private static final String ALERT_TYPE_RISK = "ACADEMIC_RISK";
+    private static final String ALERT_TYPE_RISK = "ALERTA DE RENDIMIENTO";
     private static final BigDecimal PASSING_GRADE_THRESHOLD = new BigDecimal("3.00");
     
     private static final String TIME_ZONE = "America/Bogota";
@@ -105,7 +105,7 @@ public class AlertEngineService {
         String subjectName = grade.getEnrollment().getGroup().getSubject().getName();
         
         alert.setDescription(String.format(
-                "Alerta de Riesgo: Tu nota en %s (Corte %d) fue de %s. Recuerda que el mínimo es 3.00.",
+                "La nota en %s del Corte %d fue de %s.",
                 subjectName, 
                 grade.getTermNumber(), 
                 grade.getValue().toString()));
