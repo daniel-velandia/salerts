@@ -49,14 +49,16 @@ public class StudentSpecification {
                                        filter.teacherId() != null;
 
             if (hasAcademicFilters && currentPeriodId != null) {
-
-                Subquery<Long> subquery = query.subquery(Long.class);
+                
+                Subquery<Integer> subquery = query.subquery(Integer.class);
                 Root<Enrollment> enrollmentRoot = subquery.from(Enrollment.class);
                 Join<Enrollment, Group> groupJoin = enrollmentRoot.join("group");
                 
-                subquery.select(enrollmentRoot.get("student").get("id"));
+                subquery.select(cb.literal(1));
 
                 List<Predicate> subPredicates = new ArrayList<>();
+
+                subPredicates.add(cb.equal(enrollmentRoot.get("student"), root));
 
                 Join<Group, AcademicPeriod> periodJoin = groupJoin.join("academicPeriod");
                 subPredicates.add(cb.equal(periodJoin.get("identificator"), currentPeriodId));
@@ -84,7 +86,7 @@ public class StudentSpecification {
 
                 subquery.where(subPredicates.toArray(new Predicate[0]));
                 
-                predicates.add(root.get("id").in(subquery));
+                predicates.add(cb.exists(subquery));
             }
 
             query.distinct(true);
