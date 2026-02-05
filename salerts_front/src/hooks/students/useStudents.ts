@@ -10,6 +10,8 @@ import type { GlobalOptions } from "@/domain/models/options/GlobalOptions";
 import type { Option } from "@/domain/models/Option";
 import type { StudentFilterFormValues } from "@/domain/schemas/studentFilterSchema";
 
+import { markAlertsAsRead } from "@/infraestructure/services/studentApi";
+
 export interface Result {
   students: FullStudentData[];
   selectedStudent: FullStudentData | null;
@@ -18,6 +20,7 @@ export interface Result {
   teachers: Option[];
   filterStudents: (params: StudentFilterFormValues) => void;
   selectStudent: (student: FullStudentData) => void;
+  markLocalAlertsAsRead: () => void;
 }
 
 export const useStudents = (): Result => {
@@ -26,6 +29,7 @@ export const useStudents = (): Result => {
   const [filterParams, setQueryParams] = useState<StudentFilterParams>({});
   const [selectedStudent, setSelectedStudent] =
     useState<FullStudentData | null>(null);
+  const [localStudents, setLocalStudents] = useState<FullStudentData[]>([]);
 
   const {
     loading: loadingStudents,
@@ -45,6 +49,13 @@ export const useStudents = (): Result => {
     autoFetch: true,
     params: undefined,
   });
+
+  // Sync API data with local state
+  useEffect(() => {
+    if (students) {
+      setLocalStudents(students);
+    }
+  }, [students]);
 
   // Load students only when filters are applied
   useEffect(() => {
@@ -68,43 +79,73 @@ export const useStudents = (): Result => {
       teacherId: filters.teacherId === "ALL" ? undefined : filters.teacherId || undefined,
     }
     setQueryParams(newFilters);
+    setSelectedStudent(null);
   }, []);
 
   const selectStudent = useCallback((student: FullStudentData) => {
     setSelectedStudent(student);
   }, []);
 
-  const programs: Option[] = useMemo(() => 
+  const markLocalAlertsAsRead = () => {
+    if (!selectedStudent) return;
+
+    const studentId = selectedStudent.studentInfo.id;
+
+    // Optimistic update for selected student
+    setSelectedStudent(prev => prev ? ({
+      ...prev,
+      alertInfo: {
+        ...prev.alertInfo,
+        unreadCount: 0
+      }
+    }) : null);
+
+    // Optimistic update for list
+    setLocalStudents(prev => prev.map(s =>
+      s.studentInfo.id === studentId
+        ? { ...s, alertInfo: { ...s.alertInfo, unreadCount: 0 } }
+        : s
+    ));
+
+    // API Call
+    markAlertsAsRead(studentId).call.catch(error => {
+      console.error("Error marking alerts as read:", error);
+      // Revert if needed, but for now we keep it simple
+    });
+  };
+
+  const programs: Option[] = useMemo(() =>
     (options?.programs.map((p) => ({ id: p.id, label: p.name })) ?? [])
-  , [options]);
+    , [options]);
 
-  const subjects: Option[] = useMemo(() => 
-    (options?.groups
-      .filter(g => {
-        if (!filterParams.programId) return true;
-        // Match group's subject with the program
-        const subject = options.subjects.find(s => s.id === g.subjectId);
-        return subject?.programIds.includes(filterParams.programId);
-      })
-      .map((g) => ({ id: g.id, label: g.label })) ?? [])
-  , [options, filterParams.programId]);
+  const subjects: Option[] = useMemo(() =>
+  (options?.groups
+    .filter(g => {
+      if (!filterParams.programId) return true;
+      // Match group's subject with the program
+      const subject = options.subjects.find(s => s.id === g.subjectId);
+      return subject?.programIds.includes(filterParams.programId);
+    })
+    .map((g) => ({ id: g.id, label: g.label })) ?? [])
+    , [options, filterParams.programId]);
 
-  const teachers: Option[] = useMemo(() => 
-    (options?.teachers
-      .filter((t) =>
-        !filterParams.programId ||
-        t.programIds.includes(filterParams.programId),
-      )
-      .map((t) => ({ id: t.id, label: t.name })) ?? [])
-  , [options, filterParams.programId]);
+  const teachers: Option[] = useMemo(() =>
+  (options?.teachers
+    .filter((t) =>
+      !filterParams.programId ||
+      t.programIds.includes(filterParams.programId),
+    )
+    .map((t) => ({ id: t.id, label: t.name })) ?? [])
+    , [options, filterParams.programId]);
 
   return {
-    students: students ?? [],
+    students: localStudents,
     selectedStudent,
     programs,
     subjects,
     teachers,
     filterStudents,
     selectStudent,
+    markLocalAlertsAsRead,
   };
 };

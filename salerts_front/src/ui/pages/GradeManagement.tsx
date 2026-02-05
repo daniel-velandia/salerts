@@ -45,6 +45,7 @@ export function GradeManagement() {
     uploadFile,
     isUploading,
     isDownloadingTemplate,
+    gradingEnabled,
   } = useGradeManagement();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,19 +86,19 @@ export function GradeManagement() {
                   Generar Reporte
                 </DropdownMenuItem>
                 <PermissionGuard permission={PERMISSIONS.GRADES_WRITE}>
-                    <DropdownMenuItem disabled={isDownloadingTemplate} onClick={downloadTemplate}>
-                      <Download className="w-4 h-4 mr-2" />
-                      Descargar Plantilla
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem disabled={isUploading} onClick={handleUploadClick}>
-                      <Upload className="w-4 h-4 mr-2" />
-                      Subir Notas
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsAssigning(true)}>
-                      <Pencil className="w-4 h-4 mr-2" />
-                      Modificar Notas
-                    </DropdownMenuItem>
+                  <DropdownMenuItem disabled={isDownloadingTemplate || !gradingEnabled} onClick={downloadTemplate}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Descargar Plantilla
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem disabled={isUploading || !gradingEnabled} onClick={handleUploadClick}>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Subir Notas
+                  </DropdownMenuItem>
+                  <DropdownMenuItem disabled={!gradingEnabled} onClick={() => setIsAssigning(true)}>
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Modificar Notas
+                  </DropdownMenuItem>
                 </PermissionGuard>
               </DropdownMenuContent>
             </DropdownMenu>

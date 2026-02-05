@@ -7,15 +7,12 @@ import type {
 } from "@/domain/models/Grade";
 import { useApi } from "@/hooks/common/useApi";
 import { getGradesByGroup, updateGrade, exportGrades } from "@/infraestructure/services/gradeApi";
-import { getAllGroups } from "@/infraestructure/services/groupApi";
-import { getAllStaff } from "@/infraestructure/services/staffApi";
+import { getGlobalOptions, getActiveTermStatus } from "@/infraestructure/services/optionsApi";
 import { useAppDispatch } from "@/infraestructure/store/hooks";
 import { setError, setLoading } from "@/infraestructure/store/uiSlice";
-import type { Group } from "@/domain/models/Group";
-import type { StaffResponse } from "@/domain/models/staff/StaffResponse";
+import type { GlobalOptions } from "@/domain/models/options/GlobalOptions";
 import type { Option } from "@/domain/models/Option";
 import type { GradeFilterFormValues } from "@/domain/schemas/gradeFilterSchema";
-import { getActiveTermStatus } from "@/infraestructure/services/optionsApi";
 import { uploadGradeFile, downloadGradeTemplate } from "@/infraestructure/services/gradeFilesApi";
 import type { ActiveStatusResponse, GradeFileUploadResponse } from "@/domain/models/files/GradeFileResponses";
 
@@ -38,26 +35,15 @@ export const useGradeManagement = () => {
 
   // --- 1. Data Fetching (Resources) ---
 
-  // Obtener Grupos
+  // Obtener Opciones Globales
   const {
-    data: groups,
-    loading: loadingGroups,
-    call: fetchGroups,
-    error: groupsError,
-  } = useApi<Group[], any>(getAllGroups, {
+    data: globalOptions,
+    loading: loadingOptions,
+    call: fetchOptions,
+    error: optionsError,
+  } = useApi<GlobalOptions, any>(getGlobalOptions, {
     autoFetch: false,
-    params: {} // Fetch all groups
-  });
-
-  // Obtener Profesores
-  const {
-    data: staff,
-    loading: loadingStaff,
-    call: fetchStaff,
-    error: staffError,
-  } = useApi<StaffResponse[], any>(getAllStaff, {
-    autoFetch: false,
-    params: { role: 'TEACHER' }
+    params: {}
   });
 
   // Obtener Calificaciones
@@ -85,9 +71,9 @@ export const useGradeManagement = () => {
     call: downloadTemplateCall,
     data: templateBlob,
     error: templateError
-  } = useApi<Blob, { groupId: string | number, noteNumber: number }>(downloadTemplateApi, { 
+  } = useApi<Blob, { groupId: string | number, noteNumber: number }>(downloadTemplateApi, {
     autoFetch: false,
-    params: { groupId: 0, noteNumber: 0 } 
+    params: { groupId: 0, noteNumber: 0 }
   });
 
   // Upload File
@@ -96,20 +82,20 @@ export const useGradeManagement = () => {
     call: uploadFileCall,
     data: uploadResponse,
     error: uploadError
-  } = useApi<GradeFileUploadResponse, { groupId: string | number, noteNumber: number, file: File }>(uploadFileApi, { 
+  } = useApi<GradeFileUploadResponse, { groupId: string | number, noteNumber: number, file: File }>(uploadFileApi, {
     autoFetch: false,
     params: { groupId: 0, noteNumber: 0, file: new File([], "") }
   });
 
   // Map Options
   const groupOptions: Option[] = useMemo(() => [
-    ...(groups || []).map(g => ({ id: g.id, label: `${g.subjectName} - ${g.groupName}` }))
-  ], [groups]);
+    ...(globalOptions?.groups || []).map(g => ({ id: g.id, label: g.label }))
+  ], [globalOptions]);
 
   const teacherOptions: Option[] = useMemo(() => [
     { id: "all", label: "Todos los profesores" },
-    ...(staff || []).map(s => ({ id: s.id, label: s.name }))
-  ], [staff]);
+    ...(globalOptions?.teachers || []).map(s => ({ id: s.id, label: s.name }))
+  ], [globalOptions]);
 
 
   // --- 2. Estado Local (UI & Edición) ---
@@ -121,9 +107,8 @@ export const useGradeManagement = () => {
   >({});
 
   useEffect(() => {
-    fetchGroups({});
-    fetchStaff({ role: 'TEACHER' });
-  }, [fetchGroups, fetchStaff]);
+    fetchOptions({});
+  }, [fetchOptions]);
 
   // --- 3. Sincronización y Efectos ---
 
@@ -146,56 +131,54 @@ export const useGradeManagement = () => {
 
   // Manejar estados de carga global
   useEffect(() => {
-    const isLoading = loadingGroups || loadingStaff || isLoadingGrades || downloadingTemplate || uploadingFile || loadingActiveStatus;
+    const isLoading = loadingOptions || isLoadingGrades || downloadingTemplate || uploadingFile || loadingActiveStatus;
     dispatch(setLoading(isLoading));
-    const error = loadError || templateError || uploadError || errorActiveStatus || groupsError || staffError;
+    const error = loadError || templateError || uploadError || errorActiveStatus || optionsError;
     if (error) {
       dispatch(setError(error));
     }
   }, [
-    loadingGroups, 
-    loadingStaff, 
-    isLoadingGrades, 
-    downloadingTemplate, 
-    uploadingFile, 
-    loadingActiveStatus, 
-    loadError, 
-    templateError, 
-    uploadError, 
-    errorActiveStatus, 
-    groupsError, 
-    staffError, 
+    loadingOptions,
+    isLoadingGrades,
+    downloadingTemplate,
+    uploadingFile,
+    loadingActiveStatus,
+    loadError,
+    templateError,
+    uploadError,
+    errorActiveStatus,
+    optionsError,
     dispatch]);
 
   // Reactive Handlers for Download/Upload
   useEffect(() => {
     if (templateBlob && activeStatus) {
-        const url = window.URL.createObjectURL(templateBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `plantilla_notas_grupo_${filters.groupId}_corte_${activeStatus.activeTermNumber}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        toast.success("Plantilla descargada correctamente");
+      const url = window.URL.createObjectURL(templateBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `plantilla_notas_grupo_${filters.groupId}_corte_${activeStatus.activeTermNumber}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success("Plantilla descargada correctamente");
     }
   }, [templateBlob]);
 
   useEffect(() => {
     if (uploadResponse) {
-        if (uploadResponse.errorDetails && uploadResponse.errorDetails.length > 0) {
-            if (uploadResponse.gradesSaved > 0) {
-              toast.warning(`Se guardaron ${uploadResponse.gradesSaved} notas con ${uploadResponse.errorsCount} errores.`);
-            } else {
-              toast.error(`Error al procesar el archivo: ${uploadResponse.errorsCount} errores encontrados.`);
-            }
-            console.error("Upload details:", uploadResponse);
+      if (uploadResponse.errorDetails && uploadResponse.errorDetails.length > 0) {
+        if (uploadResponse.gradesSaved > 0) {
+          toast.warning(`Se guardaron ${uploadResponse.gradesSaved} notas con ${uploadResponse.errorsCount} errores.`);
         } else {
-            toast.success(`Carga exitosa: ${uploadResponse.gradesSaved} notas guardadas.`);
+          toast.error(`Error al procesar el archivo: ${uploadResponse.errorsCount} errores encontrados.`);
         }
-        // Refresh grades
-        fetchGrades([filters.groupId, filters.teacherId]);
+        console.error("Upload details:", uploadResponse);
+      } else {
+        toast.success(`Carga exitosa: ${uploadResponse.gradesSaved} notas guardadas.`);
+      }
+      // Refresh grades
+      fetchGrades([filters.groupId, filters.teacherId]);
     }
   }, [uploadResponse]);
 
@@ -310,12 +293,12 @@ export const useGradeManagement = () => {
         toast.error("Debes seleccionar un grupo para generar el reporte");
         return;
       }
-      
+
       try {
-         setIsDownloading(true);
-         dispatch(setLoading(true));
-         await exportGrades(filters.groupId).call;
-         toast.success("Reporte descargado correctamente");
+        setIsDownloading(true);
+        dispatch(setLoading(true));
+        await exportGrades(filters.groupId).call;
+        toast.success("Reporte descargado correctamente");
       } catch (error) {
         console.error(error);
         toast.error("Error al descargar el reporte");
@@ -327,34 +310,35 @@ export const useGradeManagement = () => {
     isDownloading,
     // File Upload & Template
     activeStatus,
+    gradingEnabled: activeStatus?.gradingEnabled ?? false,
     isUploading: uploadingFile,
     isDownloadingTemplate: downloadingTemplate,
     downloadTemplate: () => {
-       if (!filters.groupId || filters.groupId === 'all' || !activeStatus) {
+      if (!filters.groupId || filters.groupId === 'all' || !activeStatus) {
         toast.error("Selecciona un grupo válido para descargar la plantilla");
         return;
       }
       downloadTemplateCall({
-        groupId: filters.groupId, 
+        groupId: filters.groupId,
         noteNumber: activeStatus.activeTermNumber
       });
     },
     uploadFile: (file: File) => {
       if (!filters.groupId || filters.groupId === 'all' || !activeStatus) {
-         toast.error("Información del grupo no disponible");
-         return;
+        toast.error("Información del grupo no disponible");
+        return;
       }
 
       // Validate Excel extension
       const validExtensions = ['.xls', '.xlsx'];
       const fileName = file.name.toLowerCase();
       if (!validExtensions.some(ext => fileName.endsWith(ext))) {
-         toast.error("Solo se permiten archivos Excel (.xls, .xlsx)");
-         return;
+        toast.error("Solo se permiten archivos Excel (.xls, .xlsx)");
+        return;
       }
 
       uploadFileCall({
-        groupId: filters.groupId, 
+        groupId: filters.groupId,
         noteNumber: activeStatus.activeTermNumber,
         file
       });

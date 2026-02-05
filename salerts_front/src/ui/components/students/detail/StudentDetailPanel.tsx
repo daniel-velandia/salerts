@@ -16,24 +16,22 @@ import { TabTriggerItem } from "../list/TabTriggerItem";
 import { KpiCard } from "../../common/dashboard/KpiCard";
 import { PermissionGuard } from "../../auth/PermissionGuard";
 import { PERMISSIONS } from "@/domain/constants/permissions";
-import { markAlertsAsRead } from "@/infraestructure/services/studentApi";
 
 interface Props {
   student: FullStudentData | null;
   onEdit: (id: string) => void;
+  onMarkAlertsRead: () => void;
 }
 
-export const StudentDetailPanel = ({ student, onEdit }: Props) => {
+export const StudentDetailPanel = ({ student, onEdit, onMarkAlertsRead }: Props) => {
   const [activeTab, setActiveTab] = useState("info");
 
   // Mark alerts as read when alerts tab is selected
   useEffect(() => {
-    if (activeTab === "alerts" && student) {
-      markAlertsAsRead(student.studentInfo.id).call.catch(error => {
-        console.error("Error marking alerts as read:", error);
-      });
+    if (activeTab === "alerts" && student && student.alertInfo.unreadCount > 0) {
+      onMarkAlertsRead();
     }
-  }, [activeTab, student]);
+  }, [activeTab, onMarkAlertsRead]);
 
   if (!student) {
     return (

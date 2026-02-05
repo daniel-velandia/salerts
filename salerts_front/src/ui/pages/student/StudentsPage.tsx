@@ -25,6 +25,7 @@ export const StudentsPage = () => {
     teachers,
     filterStudents,
     selectStudent,
+    markLocalAlertsAsRead,
   } = useStudents();
 
   const handleCreate = () => {
@@ -53,6 +54,7 @@ export const StudentsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
         <div className="lg:col-span-4 h-125 lg:h-full">
           <StudentListPanel
+            key={JSON.stringify(students)}
             students={students}
             selectedId={selectedStudent?.studentInfo.id}
             programs={programs}
@@ -64,7 +66,12 @@ export const StudentsPage = () => {
         </div>
 
         <div className="lg:col-span-8 h-auto lg:h-full">
-          <StudentDetailPanel student={selectedStudent} onEdit={handleEdit} />
+          <StudentDetailPanel
+            key={JSON.stringify(selectedStudent)}
+            student={selectedStudent}
+            onEdit={handleEdit}
+            onMarkAlertsRead={markLocalAlertsAsRead}
+          />
         </div>
       </div>
     </div>
