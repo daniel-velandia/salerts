@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Slf4j
@@ -26,23 +27,40 @@ public class AlertEngineService {
     private final GradeRepository gradeRepository;
     private final AlertRepository alertRepository;
 
-    @Scheduled(cron = "0 5 0 * * *")
+    private static final String ALERT_TYPE_RISK = "ACADEMIC_RISK";
+    private static final BigDecimal PASSING_GRADE_THRESHOLD = new BigDecimal("3.00");
+    
+    private static final String TIME_ZONE = "America/Bogota";
+
+    @Scheduled(cron = "0 0 3 * * *", zone = TIME_ZONE)
     @Transactional
     public void processClosingTermAlerts() {
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        log.info("Iniciando procesamiento de alertas para cortes cerrados el: {}", yesterday);
+        ZoneId zoneId = ZoneId.of(TIME_ZONE);
+        LocalDate todayInColombia = LocalDate.now(zoneId);
+        LocalDate yesterdayInColombia = todayInColombia.minusDays(1);
+        
+        LocalDateTime startOfYesterday = yesterdayInColombia.atStartOfDay();
+        LocalDateTime startOfToday = todayInColombia.atStartOfDay();
+
+        log.info(">>> ENGINE (Zona {}): Buscando cortes cerrados el {} (entre {} y {})", 
+                 TIME_ZONE, yesterdayInColombia, startOfYesterday, startOfToday);
 
         try {
             List<CalendarConfig> closedConfigs = calendarRepository.findAllByEndDateBetween(
-                    yesterday.atStartOfDay(),
-                    yesterday.atTime(23, 59, 59));
+                    startOfYesterday,
+                    startOfToday);
+
+            if (closedConfigs.isEmpty()) {
+                log.info(">>> ENGINE: No hubo cierres de corte ayer (Hora Colombia).");
+                return;
+            }
 
             for (CalendarConfig config : closedConfigs) {
                 try {
                     processGradesForAlerts(config);
                 } catch (Exception e) {
-                    log.error("Error procesando alertas para el corte {} del periodo {}: {}",
-                            config.getNoteNumber(), config.getPeriod().getName(), e.getMessage());
+                    log.error("Error procesando alertas para el corte {} del periodo (ID: {}): {}",
+                            config.getNoteNumber(), config.getPeriod().getIdentificator(), e.getMessage());
                 }
             }
         } catch (Exception e) {
@@ -51,9 +69,16 @@ public class AlertEngineService {
     }
 
     private void processGradesForAlerts(CalendarConfig config) {
-        List<Grade> lowGrades = gradeRepository.findByTermNumberAndValueLessThan(
+        log.info("Procesando reprobados para Periodo: {} | Corte: {}", 
+                config.getPeriod().getName(), config.getNoteNumber());
+
+        List<Grade> lowGrades = gradeRepository.findFailingGradesByPeriodIdentificator(
+                config.getPeriod().getIdentificator(),
                 config.getNoteNumber(),
-                new BigDecimal("3.0"));
+                PASSING_GRADE_THRESHOLD
+        );
+
+        log.info("Se encontraron {} estudiantes en riesgo.", lowGrades.size());
 
         for (Grade grade : lowGrades) {
             createAlert(grade, config);
@@ -64,28 +89,29 @@ public class AlertEngineService {
         boolean alreadyExists = alertRepository.existsByEnrollmentAndTermNumberAndType(
                 grade.getEnrollment(),
                 grade.getTermNumber(),
-                "ACADEMIC_RISK");
+                ALERT_TYPE_RISK);
 
         if (alreadyExists) {
-            log.info("Alerta omitida: Ya se procesó el corte {} para el estudiante {}",
-                    grade.getTermNumber(), grade.getEnrollment().getStudent().getEmail());
             return;
         }
 
         Alert alert = new Alert();
         alert.setEnrollment(grade.getEnrollment());
         alert.setTermNumber(grade.getTermNumber());
-        alert.setType("ACADEMIC_RISK");
-        alert.setRegistrationDate(LocalDateTime.now());
+        alert.setType(ALERT_TYPE_RISK);
+        alert.setRegistrationDate(LocalDateTime.now(ZoneId.of(TIME_ZONE)));
         alert.setViewed(false);
 
         String subjectName = grade.getEnrollment().getGroup().getSubject().getName();
+        
         alert.setDescription(String.format(
-                "Alerta de rendimiento: Tu nota en la materia %s para el corte %d fue de %s. Recuerda que el mínimo aprobatorio es 3.0.",
-                subjectName, grade.getTermNumber(), grade.getValue().toString()));
+                "Alerta de Riesgo: Tu nota en %s (Corte %d) fue de %s. Recuerda que el mínimo es 3.00.",
+                subjectName, 
+                grade.getTermNumber(), 
+                grade.getValue().toString()));
 
         alertRepository.save(alert);
-        log.info("Alerta generada para el estudiante: {} en la materia: {}",
-                grade.getEnrollment().getStudent().getEmail(), subjectName);
+        
+        log.debug("Alerta creada para: {}", grade.getEnrollment().getStudent().getEmail());
     }
 }

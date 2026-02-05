@@ -29,4 +29,16 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
         List<Grade> findByEnrollment(Enrollment enrollment);
 
         List<Grade> findByTermNumberAndValueLessThan(Integer termNumber, BigDecimal value);
+
+        @Query("SELECT g FROM Grade g " +
+                        "JOIN FETCH g.enrollment e " +
+                        "JOIN e.group gr " +
+                        "JOIN gr.academicPeriod p " +
+                        "WHERE p.identificator = :periodId " +
+                        "AND g.termNumber = :termNumber " +
+                        "AND g.value < :threshold")
+        List<Grade> findFailingGradesByPeriodIdentificator(
+                        @Param("periodId") UUID periodId,
+                        @Param("termNumber") Integer termNumber,
+                        @Param("threshold") BigDecimal threshold);
 }
