@@ -44,6 +44,11 @@ public class GradeFileServiceImpl implements GradeFileService {
     private final CalendarConfigRepository calendarConfigRepository;
     private final GradeRepository gradeRepository;
 
+    private static final BigDecimal WEIGHT_TERM_1 = new BigDecimal("0.25");
+    private static final BigDecimal WEIGHT_TERM_2 = new BigDecimal("0.25");
+    private static final BigDecimal WEIGHT_TERM_3 = new BigDecimal("0.20");
+    private static final BigDecimal WEIGHT_TERM_4 = new BigDecimal("0.30");
+
     @Override
     @Transactional(readOnly = true)
     public byte[] generateGradeTemplate(UUID groupId, Integer noteNumber) {
@@ -216,6 +221,13 @@ public class GradeFileServiceImpl implements GradeFileService {
 
             if (!gradesToSave.isEmpty()) {
                 gradeRepository.saveAll(gradesToSave);
+                
+                gradeRepository.flush();
+
+                Set<Enrollment> affectedEnrollments = gradesToSave.stream()
+                        .map(Grade::getEnrollment)
+                        .collect(Collectors.toSet());
+                updateBatchFinalGrades(new ArrayList<>(affectedEnrollments));
             }
 
         } catch (IOException e) {
@@ -228,6 +240,55 @@ public class GradeFileServiceImpl implements GradeFileService {
                 .errorsCount(errors.size())
                 .errorDetails(errors)
                 .build();
+    }
+
+    private void updateBatchFinalGrades(List<Enrollment> enrollments) {
+        if (enrollments.isEmpty()) return;
+
+        List<Grade> allGradesHistory = gradeRepository.findByEnrollmentIn(enrollments);
+
+        Map<Enrollment, List<Grade>> gradesByEnrollment = allGradesHistory.stream()
+                .collect(Collectors.groupingBy(Grade::getEnrollment));
+
+        List<Enrollment> enrollmentsToUpdate = new ArrayList<>();
+
+        for (Enrollment enrollment : enrollments) {
+            List<Grade> studentGrades = gradesByEnrollment.getOrDefault(enrollment, Collections.emptyList());
+            
+            BigDecimal newFinalGrade = calculateWeightedAverage(studentGrades);
+            
+            if (enrollment.getFinalGrade() == null || enrollment.getFinalGrade().compareTo(newFinalGrade) != 0) {
+                enrollment.setFinalGrade(newFinalGrade);
+                enrollmentsToUpdate.add(enrollment);
+            }
+        }
+
+        if (!enrollmentsToUpdate.isEmpty()) {
+            enrollmentRepository.saveAll(enrollmentsToUpdate);
+        }
+    }
+
+    private BigDecimal calculateWeightedAverage(List<Grade> grades) {
+        Map<Integer, BigDecimal> notesByTerm = new HashMap<>();
+
+        for (Grade g : grades) {
+            if (g.getValue() != null && g.getTermNumber() != null) {
+                notesByTerm.put(g.getTermNumber(), g.getValue());
+            }
+        }
+
+        BigDecimal finalGrade = BigDecimal.ZERO;
+
+        finalGrade = finalGrade.add(getWeightedPart(notesByTerm.get(1), WEIGHT_TERM_1));
+        finalGrade = finalGrade.add(getWeightedPart(notesByTerm.get(2), WEIGHT_TERM_2));
+        finalGrade = finalGrade.add(getWeightedPart(notesByTerm.get(3), WEIGHT_TERM_3));
+        finalGrade = finalGrade.add(getWeightedPart(notesByTerm.get(4), WEIGHT_TERM_4));
+
+        return finalGrade.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal getWeightedPart(BigDecimal score, BigDecimal weight) {
+        return (score == null) ? BigDecimal.ZERO : score.multiply(weight);
     }
 
     private void addGradeValidation(XSSFSheet sheet, int startRow, int endRow) {
