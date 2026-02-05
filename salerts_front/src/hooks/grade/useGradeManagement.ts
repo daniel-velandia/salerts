@@ -43,6 +43,7 @@ export const useGradeManagement = () => {
     data: groups,
     loading: loadingGroups,
     call: fetchGroups,
+    error: groupsError,
   } = useApi<Group[], any>(getAllGroups, {
     autoFetch: false,
     params: {} // Fetch all groups
@@ -53,6 +54,7 @@ export const useGradeManagement = () => {
     data: staff,
     loading: loadingStaff,
     call: fetchStaff,
+    error: staffError,
   } = useApi<StaffResponse[], any>(getAllStaff, {
     autoFetch: false,
     params: { role: 'TEACHER' }
@@ -69,6 +71,8 @@ export const useGradeManagement = () => {
   // Obtener Estado Activo del Grupo
   const {
     data: activeStatus,
+    error: errorActiveStatus,
+    loading: loadingActiveStatus,
     call: fetchActiveStatus,
   } = useApi<ActiveStatusResponse, string | number>(getActiveTermStatus, {
     autoFetch: false,
@@ -142,12 +146,26 @@ export const useGradeManagement = () => {
 
   // Manejar estados de carga global
   useEffect(() => {
-    const isLoading = loadingGroups || loadingStaff || isLoadingGrades || downloadingTemplate || uploadingFile;
+    const isLoading = loadingGroups || loadingStaff || isLoadingGrades || downloadingTemplate || uploadingFile || loadingActiveStatus;
     dispatch(setLoading(isLoading));
-    if (loadError) {
-      dispatch(setError(loadError));
+    const error = loadError || templateError || uploadError || errorActiveStatus || groupsError || staffError;
+    if (error) {
+      dispatch(setError(error));
     }
-  }, [loadingGroups, loadingStaff, isLoadingGrades, loadError, dispatch]);
+  }, [
+    loadingGroups, 
+    loadingStaff, 
+    isLoadingGrades, 
+    downloadingTemplate, 
+    uploadingFile, 
+    loadingActiveStatus, 
+    loadError, 
+    templateError, 
+    uploadError, 
+    errorActiveStatus, 
+    groupsError, 
+    staffError, 
+    dispatch]);
 
   // Reactive Handlers for Download/Upload
   useEffect(() => {
@@ -180,18 +198,6 @@ export const useGradeManagement = () => {
         fetchGrades([filters.groupId, filters.teacherId]);
     }
   }, [uploadResponse]);
-
-  useEffect(() => {
-      if (templateError) {
-          console.error(templateError);
-          toast.error("Error al descargar la plantilla");
-      }
-      if (uploadError) {
-          console.error(uploadError);
-          toast.error("Error al subir el archivo de notas");
-      }
-  }, [templateError, uploadError]);
-
 
   // --- 4. Stats ---
   const stats = useMemo(
